@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, X, Plus, Activity, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Loader2, X, Plus, Activity, AlertCircle, CheckCircle2, Mic, MicOff } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 
@@ -21,6 +21,37 @@ export const SymptomChecker = () => {
   const [currentSymptom, setCurrentSymptom] = useState("");
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<AnalysisResult[]>([]);
+  const [isListening, setIsListening] = useState(false);
+  const [recognition, setRecognition] = useState<any>(null);
+
+  useEffect(() => {
+    // Initialize speech recognition
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      const recognitionInstance = new SpeechRecognition();
+      recognitionInstance.continuous = false;
+      recognitionInstance.interimResults = false;
+      recognitionInstance.lang = 'en-US';
+
+      recognitionInstance.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setCurrentSymptom(transcript);
+        toast.success(`Recognized: ${transcript}`);
+      };
+
+      recognitionInstance.onerror = (event: any) => {
+        console.error('Speech recognition error:', event.error);
+        toast.error('Failed to recognize speech. Please try again.');
+        setIsListening(false);
+      };
+
+      recognitionInstance.onend = () => {
+        setIsListening(false);
+      };
+
+      setRecognition(recognitionInstance);
+    }
+  }, []);
 
   const addSymptom = () => {
     if (currentSymptom.trim() && !symptoms.includes(currentSymptom.trim())) {
@@ -83,6 +114,22 @@ export const SymptomChecker = () => {
     }
   };
 
+  const toggleVoiceInput = () => {
+    if (!recognition) {
+      toast.error('Speech recognition is not supported in your browser');
+      return;
+    }
+
+    if (isListening) {
+      recognition.stop();
+      setIsListening(false);
+    } else {
+      recognition.start();
+      setIsListening(true);
+      toast.info('Listening... Speak your symptom');
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       <div className="text-center mb-8">
@@ -111,6 +158,14 @@ export const SymptomChecker = () => {
                 onChange={(e) => setCurrentSymptom(e.target.value)}
                 onKeyPress={handleKeyPress}
               />
+              <Button 
+                onClick={toggleVoiceInput} 
+                size="icon"
+                variant={isListening ? "destructive" : "secondary"}
+                className={isListening ? "animate-pulse" : ""}
+              >
+                {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+              </Button>
               <Button onClick={addSymptom} size="icon">
                 <Plus className="h-4 w-4" />
               </Button>
