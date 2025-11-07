@@ -5,9 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, X, Plus, Activity, AlertCircle, CheckCircle2, Mic, MicOff } from "lucide-react";
+import { Loader2, X, Plus, Activity, AlertCircle, CheckCircle2, Mic, MicOff, Languages } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface AnalysisResult {
   disease: string;
@@ -23,6 +24,7 @@ export const SymptomChecker = () => {
   const [results, setResults] = useState<AnalysisResult[]>([]);
   const [isListening, setIsListening] = useState(false);
   const [recognition, setRecognition] = useState<any>(null);
+  const [language, setLanguage] = useState<'en' | 'hi'>('en');
 
   useEffect(() => {
     // Initialize speech recognition
@@ -75,7 +77,7 @@ export const SymptomChecker = () => {
 
     try {
       const { data, error } = await supabase.functions.invoke('analyze-symptoms', {
-        body: { symptoms }
+        body: { symptoms, language }
       });
 
       if (error) throw error;
@@ -136,18 +138,36 @@ export const SymptomChecker = () => {
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-primary to-accent mb-4">
           <Activity className="w-8 h-8 text-white" />
         </div>
-        <h2 className="text-4xl font-bold mb-2">Symptom Analyzer</h2>
+        <h2 className="text-4xl font-bold mb-2">
+          {language === 'hi' ? 'लक्षण विश्लेषक' : 'Symptom Analyzer'}
+        </h2>
         <p className="text-muted-foreground">
-          Enter your symptoms to receive an intelligent health assessment
+          {language === 'hi' 
+            ? 'एक बुद्धिमान स्वास्थ्य मूल्यांकन प्राप्त करने के लिए अपने लक्षण दर्ज करें'
+            : 'Enter your symptoms to receive an intelligent health assessment'}
         </p>
+        <div className="mt-4 flex justify-center">
+          <Select value={language} onValueChange={(value: 'en' | 'hi') => setLanguage(value)}>
+            <SelectTrigger className="w-48">
+              <Languages className="w-4 h-4 mr-2" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="en">English</SelectItem>
+              <SelectItem value="hi">हिंदी (Hindi)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Add Symptoms</CardTitle>
+            <CardTitle>{language === 'hi' ? 'लक्षण जोड़ें' : 'Add Symptoms'}</CardTitle>
             <CardDescription>
-              Enter your symptoms one at a time
+              {language === 'hi' 
+                ? 'एक बार में अपने लक्षण दर्ज करें'
+                : 'Enter your symptoms one at a time'}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -172,9 +192,13 @@ export const SymptomChecker = () => {
             </div>
 
             <div className="space-y-2">
-              <h4 className="text-sm font-medium">Selected Symptoms:</h4>
+              <h4 className="text-sm font-medium">
+                {language === 'hi' ? 'चयनित लक्षण:' : 'Selected Symptoms:'}
+              </h4>
               {symptoms.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No symptoms added yet</p>
+                <p className="text-sm text-muted-foreground">
+                  {language === 'hi' ? 'अभी तक कोई लक्षण नहीं जोड़ा गया' : 'No symptoms added yet'}
+                </p>
               ) : (
                 <div className="flex flex-wrap gap-2">
                   {symptoms.map((symptom) => (
@@ -199,15 +223,18 @@ export const SymptomChecker = () => {
               size="lg"
             >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Analyze Symptoms
+              {language === 'hi' ? 'लक्षणों का विश्लेषण करें' : 'Analyze Symptoms'}
             </Button>
 
             <Alert>
               <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Medical Disclaimer</AlertTitle>
+              <AlertTitle>
+                {language === 'hi' ? 'चिकित्सा अस्वीकरण' : 'Medical Disclaimer'}
+              </AlertTitle>
               <AlertDescription className="text-xs">
-                This is an AI-powered assessment tool. Always consult with a healthcare 
-                professional for proper medical diagnosis and treatment.
+                {language === 'hi'
+                  ? 'यह एक एआई-संचालित मूल्यांकन उपकरण है। उचित चिकित्सा निदान और उपचार के लिए हमेशा स्वास्थ्य सेवा पेशेवर से परामर्श करें।'
+                  : 'This is an AI-powered assessment tool. Always consult with a healthcare professional for proper medical diagnosis and treatment.'}
               </AlertDescription>
             </Alert>
           </CardContent>
@@ -219,10 +246,12 @@ export const SymptomChecker = () => {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <CheckCircle2 className="mr-2 h-5 w-5 text-primary" />
-                  Analysis Results
+                  {language === 'hi' ? 'विश्लेषण परिणाम' : 'Analysis Results'}
                 </CardTitle>
                 <CardDescription>
-                  Top predicted conditions based on your symptoms
+                  {language === 'hi'
+                    ? 'आपके लक्षणों के आधार पर शीर्ष अनुमानित स्थितियां'
+                    : 'Top predicted conditions based on your symptoms'}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -233,7 +262,7 @@ export const SymptomChecker = () => {
                         <div className="flex items-start justify-between">
                           <h3 className="font-semibold text-lg">{result.disease}</h3>
                           <Badge variant={index === 0 ? "default" : "secondary"}>
-                            {result.confidence.toFixed(1)}% match
+                            {result.confidence.toFixed(1)}% {language === 'hi' ? 'मिलान' : 'match'}
                           </Badge>
                         </div>
 
@@ -245,7 +274,9 @@ export const SymptomChecker = () => {
                           <>
                             <Separator />
                             <div>
-                              <h4 className="font-medium text-sm mb-2">Recommended Precautions:</h4>
+                              <h4 className="font-medium text-sm mb-2">
+                                {language === 'hi' ? 'अनुशंसित सावधानियां:' : 'Recommended Precautions:'}
+                              </h4>
                               <ul className="space-y-1">
                                 {result.precautions.map((precaution, idx) => (
                                   <li key={idx} className="text-sm text-muted-foreground flex items-start">
