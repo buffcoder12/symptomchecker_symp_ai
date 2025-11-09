@@ -9,6 +9,7 @@ import { Loader2, X, Plus, Activity, AlertCircle, CheckCircle2, Mic, MicOff, Lan
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ResultCard } from "@/components/ui/result-card";
 
 interface AnalysisResult {
   disease: string;
@@ -256,41 +257,16 @@ export const SymptomChecker = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 {results.map((result, index) => (
-                  <Card key={index} className={index === 0 ? "border-2 border-primary/30" : ""}>
-                    <CardContent className="pt-6">
-                      <div className="space-y-3">
-                        <div className="flex items-start justify-between">
-                          <h3 className="font-semibold text-lg">{result.disease}</h3>
-                          <Badge variant={index === 0 ? "default" : "secondary"}>
-                            {result.confidence.toFixed(1)}% {language === 'hi' ? 'मिलान' : 'match'}
-                          </Badge>
-                        </div>
-
-                        <p className="text-sm text-muted-foreground leading-relaxed">
-                          {result.description}
-                        </p>
-
-                        {result.precautions && result.precautions.length > 0 && (
-                          <>
-                            <Separator />
-                            <div>
-                              <h4 className="font-medium text-sm mb-2">
-                                {language === 'hi' ? 'अनुशंसित सावधानियां:' : 'Recommended Precautions:'}
-                              </h4>
-                              <ul className="space-y-1">
-                                {result.precautions.map((precaution, idx) => (
-                                  <li key={idx} className="text-sm text-muted-foreground flex items-start">
-                                    <span className="mr-2">•</span>
-                                    <span>{precaution}</span>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <ResultCard
+                    key={index}
+                    variant={index === 0 ? "primary" : index === 1 ? "success" : "secondary"}
+                    shimmer={index === 0}
+                    disease={result.disease}
+                    confidence={result.confidence}
+                    description={result.description}
+                    precautions={result.precautions}
+                    language={language}
+                  />
                 ))}
               </CardContent>
             </Card>

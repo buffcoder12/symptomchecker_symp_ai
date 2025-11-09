@@ -55,6 +55,12 @@ All colors MUST be HSL.
     --sidebar-ring: 195 85% 45%;
   }
 
+  @keyframes shimmer {
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
   .dark {
     --background: 215 30% 8%;
     --foreground: 185 20% 92%;
