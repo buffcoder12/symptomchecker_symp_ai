@@ -10,6 +10,18 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ResultCard } from "@/components/ui/result-card";
+import { z } from "zod";
+
+// Validation schemas
+const symptomSchema = z.string()
+  .trim()
+  .min(2, 'Symptom must be at least 2 characters')
+  .max(100, 'Symptom must be less than 100 characters')
+  .regex(/^[a-zA-Z\s\-]+$/, 'Symptom can only contain letters, spaces, and hyphens');
+
+const symptomsArraySchema = z.array(symptomSchema)
+  .min(1, 'At least one symptom is required')
+  .max(20, 'Maximum 20 symptoms allowed');
 
 interface AnalysisResult {
   disease: string;
@@ -57,10 +69,33 @@ export const SymptomChecker = () => {
   }, []);
 
   const addSymptom = () => {
-    if (currentSymptom.trim() && !symptoms.includes(currentSymptom.trim())) {
-      setSymptoms([...symptoms, currentSymptom.trim()]);
-      setCurrentSymptom("");
+    const trimmedSymptom = currentSymptom.trim();
+    
+    if (!trimmedSymptom) {
+      toast.error("Please enter a symptom");
+      return;
     }
+
+    if (symptoms.includes(trimmedSymptom)) {
+      toast.error("This symptom is already added");
+      return;
+    }
+
+    if (symptoms.length >= 20) {
+      toast.error("Maximum 20 symptoms allowed");
+      return;
+    }
+
+    // Validate the symptom
+    const validation = symptomSchema.safeParse(trimmedSymptom);
+    if (!validation.success) {
+      toast.error(validation.error.issues[0].message);
+      return;
+    }
+
+    setSymptoms([...symptoms, trimmedSymptom]);
+    setCurrentSymptom("");
+    toast.success("Symptom added");
   };
 
   const removeSymptom = (symptom: string) => {
@@ -68,8 +103,10 @@ export const SymptomChecker = () => {
   };
 
   const analyzeSymptoms = async () => {
-    if (symptoms.length === 0) {
-      toast.error("Please add at least one symptom");
+    // Validate symptoms array
+    const validation = symptomsArraySchema.safeParse(symptoms);
+    if (!validation.success) {
+      toast.error(validation.error.issues[0].message);
       return;
     }
 

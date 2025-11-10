@@ -10,6 +10,37 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import sympaiLogo from "@/assets/sympai-logo.png";
+import { z } from "zod";
+
+// Validation schemas
+const emailSchema = z.string()
+  .trim()
+  .email('Please enter a valid email address')
+  .max(255, 'Email must be less than 255 characters');
+
+const passwordSchema = z.string()
+  .min(8, 'Password must be at least 8 characters')
+  .max(100, 'Password must be less than 100 characters')
+  .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+  .regex(/[0-9]/, 'Password must contain at least one number')
+  .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character');
+
+const nameSchema = z.string()
+  .trim()
+  .min(2, 'Name must be at least 2 characters')
+  .max(100, 'Name must be less than 100 characters')
+  .regex(/^[a-zA-Z\s\-']+$/, 'Name can only contain letters, spaces, hyphens, and apostrophes');
+
+const signUpSchema = z.object({
+  email: emailSchema,
+  password: passwordSchema,
+  fullName: nameSchema
+});
+
+const signInSchema = z.object({
+  email: emailSchema,
+  password: z.string().min(1, 'Password is required')
+});
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -35,12 +66,21 @@ const Auth = () => {
     setLoading(true);
 
     try {
+      // Validate input
+      const validation = signUpSchema.safeParse({ email, password, fullName });
+      if (!validation.success) {
+        const firstError = validation.error.issues[0];
+        toast.error(firstError.message);
+        setLoading(false);
+        return;
+      }
+
       const { error } = await supabase.auth.signUp({
-        email,
-        password,
+        email: validation.data.email,
+        password: validation.data.password,
         options: {
           data: {
-            full_name: fullName,
+            full_name: validation.data.fullName,
           },
           emailRedirectTo: `${window.location.origin}/`,
         },
@@ -64,9 +104,18 @@ const Auth = () => {
     setLoading(true);
 
     try {
+      // Validate input
+      const validation = signInSchema.safeParse({ email, password });
+      if (!validation.success) {
+        const firstError = validation.error.issues[0];
+        toast.error(firstError.message);
+        setLoading(false);
+        return;
+      }
+
       const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+        email: validation.data.email,
+        password: validation.data.password,
       });
 
       if (error) throw error;
@@ -85,7 +134,15 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+      // Validate email
+      const validation = emailSchema.safeParse(resetEmail);
+      if (!validation.success) {
+        toast.error(validation.error.issues[0].message);
+        setLoading(false);
+        return;
+      }
+
+      const { error } = await supabase.auth.resetPasswordForEmail(validation.data, {
         redirectTo: `${window.location.origin}/auth`,
       });
 
@@ -238,12 +295,14 @@ const Auth = () => {
                     <Input
                       id="signup-password"
                       type="password"
-                      placeholder="••••••••"
+                      placeholder="Min 8 chars, 1 uppercase, 1 number, 1 special"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
-                      minLength={6}
                     />
+                    <p className="text-xs text-muted-foreground">
+                      Password must be at least 8 characters with uppercase, number, and special character
+                    </p>
                   </div>
                 </CardContent>
                 <CardFooter>

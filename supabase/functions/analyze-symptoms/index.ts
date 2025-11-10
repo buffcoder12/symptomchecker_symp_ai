@@ -1,9 +1,25 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.76.1';
+import { z } from 'https://deno.land/x/zod@v3.23.8/mod.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Input validation schemas
+const symptomSchema = z.string()
+  .trim()
+  .min(2, 'Symptom must be at least 2 characters')
+  .max(100, 'Symptom must be less than 100 characters')
+  .regex(/^[a-zA-Z\s\-\_]+$/, 'Symptom contains invalid characters');
+
+const requestSchema = z.object({
+  symptoms: z.array(symptomSchema)
+    .min(1, 'At least one symptom is required')
+    .max(20, 'Maximum 20 symptoms allowed'),
+  language: z.enum(['en', 'hi']).default('en')
+});
 
 // Disease weights based on training data
 const diseaseSymptomWeights: Record<string, Record<string, number>> = {
@@ -287,17 +303,62 @@ serve(async (req) => {
   }
 
   try {
-    const { symptoms, language = 'en' } = await req.json();
-    
-    if (!symptoms || !Array.isArray(symptoms) || symptoms.length === 0) {
+    // Verify authentication
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader) {
+      console.error('Missing authorization header');
       return new Response(
-        JSON.stringify({ error: "Please provide at least one symptom" }), 
+        JSON.stringify({ error: "Authentication required" }), 
+        { 
+          status: 401, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        headers: { Authorization: authHeader },
+      },
+    });
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !user) {
+      console.error('Authentication failed:', authError?.message);
+      return new Response(
+        JSON.stringify({ error: "Invalid authentication" }), 
+        { 
+          status: 401, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    console.log(`Request from user: ${user.id}`);
+
+    // Parse and validate input
+    const body = await req.json();
+    const validation = requestSchema.safeParse(body);
+    
+    if (!validation.success) {
+      console.error('Validation failed:', validation.error.issues);
+      return new Response(
+        JSON.stringify({ 
+          error: "Invalid input", 
+          details: validation.error.issues.map(i => i.message)
+        }), 
         { 
           status: 400, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         }
       );
     }
+
+    const { symptoms, language } = validation.data;
+    console.log(`Analyzing ${symptoms.length} symptoms in ${language}`);
 
     const results = analyzeSymptoms(symptoms, language);
     
