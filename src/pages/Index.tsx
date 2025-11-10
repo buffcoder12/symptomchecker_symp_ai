@@ -5,6 +5,7 @@ import { SymptomChecker } from "@/components/SymptomChecker";
 import { Button } from "@/components/ui/button";
 import { User, LogOut } from "lucide-react";
 import { toast } from "sonner";
+import sympaiLogo from "@/assets/sympai-logo.png";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -54,9 +55,12 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            SympAI
-          </h1>
+          <div className="flex items-center gap-3">
+            <img src={sympaiLogo} alt="SympAI Logo" className="h-10 w-10" />
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              SympAI
+            </h1>
+          </div>
           <div className="flex items-center space-x-2">
             <Button
               variant="ghost"
