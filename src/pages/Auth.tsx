@@ -8,7 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Activity } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import sympaiLogo from "@/assets/sympai-logo.png";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -104,14 +105,14 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5 p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-primary to-accent mb-4">
-            <Activity className="w-8 h-8 text-white" />
+          <div className="inline-flex items-center justify-center mb-4">
+            <img src={sympaiLogo} alt="SympAI Logo" className="h-20 w-20" />
           </div>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            Symptom Sage Suite
+            SympAI
           </h1>
           <p className="text-muted-foreground mt-2">
-            Your intelligent health companion
+            AI-Powered Symptom Analysis
           </p>
         </div>
 
