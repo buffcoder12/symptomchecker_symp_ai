@@ -120,40 +120,25 @@ export const SymptomChecker = () => {
 
       if (error) throw error;
 
-      if (data?.analysis) {
-        // Transform the new AI analysis format to the old results format
-        const conditions = data.analysis.conditions || [];
-        const transformedResults = conditions.map((condition: any) => ({
-          disease: condition.name,
-          confidence: condition.probability === 'high' ? 0.9 : condition.probability === 'medium' ? 0.7 : 0.5,
-          description: condition.description,
-          precautions: condition.precautions || [],
-          severity: condition.severity || 'moderate'
-        }));
-
-        setResults(transformedResults);
+      if (data?.results) {
+        setResults(data.results);
         
         // Save to database
-        if (transformedResults.length > 0) {
-          const topResult = transformedResults[0];
-          const { data: { user } } = await supabase.auth.getUser();
-          
-          if (user) {
-            await supabase.from('symptom_analyses').insert({
-              user_id: user.id,
-              symptoms: symptoms,
-              predicted_disease: topResult.disease,
-              confidence: topResult.confidence,
-              description: topResult.description,
-              precautions: topResult.precautions
-            });
-          }
+        const topResult = data.results[0];
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user) {
+          await supabase.from('symptom_analyses').insert({
+            user_id: user.id,
+            symptoms: symptoms,
+            predicted_disease: topResult.disease,
+            confidence: topResult.confidence,
+            description: topResult.description,
+            precautions: topResult.precautions
+          });
         }
 
-        const matchInfo = data.totalDiseases 
-          ? ` (Analyzed against ${data.totalDiseases} diseases from medical database)` 
-          : '';
-        toast.success(`Analysis complete!${matchInfo}`);
+        toast.success("Analysis complete!");
       }
     } catch (error: any) {
       console.error('Analysis error:', error);
