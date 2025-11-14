@@ -4,6 +4,8 @@ import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Progress } from "@/components/ui/progress";
+import { AlertCircle, AlertTriangle, CheckCircle } from "lucide-react";
 
 const resultCardVariants = cva(
   "relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:scale-[1.02] active:scale-[0.99] group cursor-pointer",
@@ -36,19 +38,43 @@ export interface ResultCardProps extends React.HTMLAttributes<HTMLDivElement>, V
 
 const ResultCard = React.forwardRef<HTMLDivElement, ResultCardProps>(
   ({ className, variant, shimmer, disease, confidence, description, precautions, language = 'en', ...props }, ref) => {
+    const getSeverityLevel = () => {
+      if (confidence >= 70) return { level: 'high', color: 'text-primary', icon: CheckCircle, label: language === 'hi' ? 'उच्च' : 'High' };
+      if (confidence >= 50) return { level: 'medium', color: 'text-accent', icon: AlertTriangle, label: language === 'hi' ? 'मध्यम' : 'Medium' };
+      return { level: 'low', color: 'text-muted-foreground', icon: AlertCircle, label: language === 'hi' ? 'कम' : 'Low' };
+    };
+
+    const severity = getSeverityLevel();
+    const SeverityIcon = severity.icon;
+
     return (
       <Card ref={ref} className={cn(resultCardVariants({ variant, shimmer, className }))} {...props}>
         <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-primary/10 to-transparent rounded-bl-[100px] opacity-50 group-hover:opacity-100 transition-opacity" />
         <CardContent className="pt-6 relative z-10">
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div className="flex items-start justify-between">
               <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">{disease}</h3>
-              <Badge 
-                variant={variant === "primary" ? "default" : "secondary"} 
-                className="shadow-md group-hover:shadow-lg transition-shadow"
-              >
-                {confidence.toFixed(1)}% {language === 'hi' ? 'मिलान' : 'match'}
-              </Badge>
+              <div className="flex items-center gap-2">
+                <SeverityIcon className={cn("h-4 w-4", severity.color)} />
+                <Badge 
+                  variant={variant === "primary" ? "default" : "secondary"} 
+                  className="shadow-md group-hover:shadow-lg transition-shadow"
+                >
+                  {confidence.toFixed(1)}%
+                </Badge>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">
+                  {language === 'hi' ? 'विश्वास स्तर' : 'Confidence Level'}
+                </span>
+                <span className={cn("font-medium", severity.color)}>
+                  {severity.label}
+                </span>
+              </div>
+              <Progress value={confidence} className="h-2" />
             </div>
 
             <p className="text-sm text-muted-foreground leading-relaxed">

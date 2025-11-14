@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { SymptomChecker } from "@/components/SymptomChecker";
 import { Button } from "@/components/ui/button";
-import { User, LogOut } from "lucide-react";
+import { User, LogOut, History, UserCircle } from "lucide-react";
 import { toast } from "sonner";
 import sympaiLogo from "@/assets/sympai-logo.png";
 
@@ -61,7 +61,23 @@ const Index = () => {
               SympAI
             </h1>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="hidden md:flex items-center space-x-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate("/history")}
+            >
+              <History className="mr-2 h-4 w-4" />
+              History
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate("/profile")}
+            >
+              <UserCircle className="mr-2 h-4 w-4" />
+              Profile
+            </Button>
             <Button
               variant="ghost"
               size="sm"
