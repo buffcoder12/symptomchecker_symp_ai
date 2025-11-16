@@ -12,7 +12,7 @@ const symptomSchema = z.string()
   .trim()
   .min(2, 'Symptom must be at least 2 characters')
   .max(100, 'Symptom must be less than 100 characters')
-  .regex(/^[a-zA-Z\s\-\_]+$/, 'Symptom contains invalid characters');
+  .regex(/^[a-zA-Z\s\-]+$/, 'Symptom contains invalid characters');
 
 const requestSchema = z.object({
   symptoms: z.array(symptomSchema)
