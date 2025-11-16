@@ -8,6 +8,7 @@ import Auth from "./pages/Auth";
 import Account from "./pages/Account";
 import History from "./pages/History";
 import Profile from "./pages/Profile";
+import FindDoctor from "./pages/FindDoctor";
 import NotFound from "./pages/NotFound";
 import MobileNav from "./components/MobileNav";
 
@@ -26,6 +27,7 @@ const App = () => (
             <Route path="/account" element={<Account />} />
             <Route path="/history" element={<History />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/find-doctor" element={<FindDoctor />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

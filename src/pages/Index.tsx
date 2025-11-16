@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { SymptomChecker } from "@/components/SymptomChecker";
 import { Button } from "@/components/ui/button";
-import { User, LogOut, History, UserCircle } from "lucide-react";
+import { User, LogOut, History, UserCircle, Stethoscope } from "lucide-react";
 import { toast } from "sonner";
 import sympaiLogo from "@/assets/sympai-logo.png";
 
@@ -69,6 +69,14 @@ const Index = () => {
             >
               <History className="mr-2 h-4 w-4" />
               History
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate("/find-doctor")}
+            >
+              <Stethoscope className="mr-2 h-4 w-4" />
+              Find Doctor
             </Button>
             <Button
               variant="ghost"
