@@ -5,7 +5,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
-import { AlertCircle, AlertTriangle, CheckCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { AlertCircle, AlertTriangle, CheckCircle, MapPin } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const resultCardVariants = cva(
   "relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:scale-[1.02] active:scale-[0.99] group cursor-pointer",
@@ -38,6 +40,8 @@ export interface ResultCardProps extends React.HTMLAttributes<HTMLDivElement>, V
 
 const ResultCard = React.forwardRef<HTMLDivElement, ResultCardProps>(
   ({ className, variant, shimmer, disease, confidence, description, precautions, language = 'en', ...props }, ref) => {
+    const navigate = useNavigate();
+    
     const getSeverityLevel = () => {
       if (confidence >= 70) return { level: 'high', color: 'text-primary', icon: CheckCircle, label: language === 'hi' ? 'उच्च' : 'High' };
       if (confidence >= 50) return { level: 'medium', color: 'text-accent', icon: AlertTriangle, label: language === 'hi' ? 'मध्यम' : 'Medium' };
@@ -100,6 +104,17 @@ const ResultCard = React.forwardRef<HTMLDivElement, ResultCardProps>(
                 </div>
               </>
             )}
+
+            <Separator className="group-hover:bg-primary/20 transition-colors" />
+            
+            <Button 
+              className="w-full" 
+              variant="outline"
+              onClick={() => navigate('/find-doctor', { state: { disease } })}
+            >
+              <MapPin className="mr-2 h-4 w-4" />
+              {language === 'hi' ? 'डॉक्टर खोजें' : 'Find Nearby Doctors'}
+            </Button>
           </div>
         </CardContent>
       </Card>

@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { Home, History, UserCircle, User } from "lucide-react";
+import { Home, History, UserCircle, User, Stethoscope } from "lucide-react";
 
 const MobileNav = () => {
   return (
@@ -27,6 +27,18 @@ const MobileNav = () => {
         >
           <History className="h-5 w-5 mb-1" />
           <span className="text-xs">History</span>
+        </NavLink>
+
+        <NavLink
+          to="/find-doctor"
+          className={({ isActive }) =>
+            `flex flex-col items-center justify-center flex-1 h-full transition-colors ${
+              isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
+            }`
+          }
+        >
+          <Stethoscope className="h-5 w-5 mb-1" />
+          <span className="text-xs">Doctor</span>
         </NavLink>
 
         <NavLink
